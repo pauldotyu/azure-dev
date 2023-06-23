@@ -5,6 +5,7 @@
 ### Bugs Fixed
 
 - [[2402]](https://github.com/Azure/azure-dev/pull/2279) Support for workload profiles in Azure Container Apps
+- [[2367]](https://github.com/Azure/azure-dev/pull/2367) Don't fail deployment for failed environment substitution
 
 ## 1.0.2 (2023-06-14)
 
