@@ -4,6 +4,7 @@
 
 ### Bugs Fixed
 
+- [[2390]](https://github.com/Azure/azure-dev/pull/2367) Fixes unmarshalling of k8s ingress resources with TLS hosts
 - [[2402]](https://github.com/Azure/azure-dev/pull/2279) Support for workload profiles in Azure Container Apps
 - [[2367]](https://github.com/Azure/azure-dev/pull/2367) Don't fail deployment for failed environment substitution
 
