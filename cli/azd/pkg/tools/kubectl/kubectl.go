@@ -205,6 +205,17 @@ func (cli *Cli) Apply(ctx context.Context, path string, flags *KubeCliFlags) err
 	return nil
 }
 
+func (cli *Cli) SetImage(ctx context.Context, name string, image string, flags *KubeCliFlags) (*exec.RunResult, error) {
+	args := []string{"set", "image", "deployment", name, fmt.Sprintf("%s=%s", name, image)}
+
+	res, err := cli.Exec(ctx, flags, args...)
+	if err != nil {
+		return nil, fmt.Errorf("kubectl set image: %w", err)
+	}
+
+	return &res, nil
+}
+
 // Applies the manifests at the specified path using kustomize
 func (cli *Cli) ApplyWithKustomize(ctx context.Context, path string, flags *KubeCliFlags) error {
 	runArgs := exec.NewRunArgs("kubectl", "apply", "-k", path)

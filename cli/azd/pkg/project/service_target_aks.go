@@ -44,6 +44,8 @@ var (
 	// Finds URLS in the endpoints that contain additional metadata
 	// Example: http://10.0.101.18:80 (Service: todo-api, Type: ClusterIP)
 	endpointRegex = regexp.MustCompile(`^(.*?)\s*(?:\(.*?\))?$`)
+
+	remoteImageTag string
 )
 
 // The AKS configuration options
@@ -205,10 +207,11 @@ func (t *aksTarget) Deploy(
 	// Ex) Helm charts, or other manifests that reference external images
 	if serviceConfig.Docker.RemoteBuild || packageOutput.Details != nil || packageOutput.PackagePath != "" {
 		// Login, tag & push container image to ACR
-		_, err := t.containerHelper.Deploy(ctx, serviceConfig, packageOutput, targetResource, true, progress)
+		serviceDeployResult, err := t.containerHelper.Deploy(ctx, serviceConfig, packageOutput, targetResource, true, progress)
 		if err != nil {
 			return nil, err
 		}
+		remoteImageTag = serviceDeployResult.Details.(*dockerDeployResult).RemoteImageTag
 	}
 
 	// Sync environment
@@ -316,6 +319,20 @@ func (t *aksTarget) deployManifests(
 	deploymentName := serviceConfig.K8s.Deployment.Name
 	if deploymentName == "" {
 		deploymentName = serviceConfig.Name
+	}
+
+	// if the remote image tag is set, we will update the deployment image
+	if remoteImageTag != "" {
+		task.SetProgress(NewServiceProgress("Updating deployment image"))
+		_, err := t.kubectl.SetImage(
+			ctx,
+			deploymentName,
+			remoteImageTag,
+			nil,
+		)
+		if err != nil {
+			return false, nil, fmt.Errorf("failed setting image for deployment '%s': %w", deploymentName, err)
+		}
 	}
 
 	// It is not a requirement for a AZD deploy to contain a deployment object
